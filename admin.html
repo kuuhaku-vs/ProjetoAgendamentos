@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel do salão</title>
+<meta name="theme-color" content="#5a1f38">
+<link rel="manifest" href="manifest-admin.webmanifest">
+<link rel="icon" href="icone-192.png">
+<link rel="stylesheet" href="estilo.css">
+<style>
+  .wrap{max-width:1040px}
+  .abas{display:flex;gap:4px;overflow-x:auto;margin:-40px 0 16px;position:relative;z-index:1;padding:4px;background:var(--papel);border:1px solid var(--linha);border-radius:999px;box-shadow:var(--sombra)}
+  .aba{border:0;background:none;padding:9px 16px;border-radius:999px;cursor:pointer;font-weight:600;color:var(--suave);white-space:nowrap;position:relative}
+  .aba.on{background:var(--cor);color:#fff}
+  .badge{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--alerta);color:#fff;font-size:11px;margin-left:5px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+  .kpi{background:var(--papel);border:1px solid var(--linha);border-radius:14px;padding:14px 16px}
+  .kpi .rot{font-size:12.5px;color:var(--suave);font-weight:600}
+  .kpi .val{font-family:var(--serif);font-size:26px;font-weight:600;color:var(--cor-esc);margin-top:2px}
+  .kpi .sub{font-size:12.5px;color:var(--suave)}
+  .barra-dia{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .barra-dia h2{flex:1;font-size:22px;min-width:200px}
+  .semana{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px}
+  .sdia{border:1.5px solid var(--linha);border-radius:12px;background:#fff;padding:8px 4px;text-align:center;cursor:pointer}
+  .sdia.sel{border-color:var(--cor);background:var(--cor-clara)}
+  .sdia .s{font-size:11px;text-transform:uppercase;color:var(--suave);letter-spacing:.8px}
+  .sdia .n{font-family:var(--serif);font-size:20px;font-weight:600}
+  .sdia .q{font-size:11.5px;color:var(--cor);font-weight:700}
+  .sdia.fech .q{color:var(--suave);font-weight:400}
+  .ag{display:grid;grid-template-columns:70px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-top:1px solid var(--linha)}
+  .ag:first-child{border-top:0}
+  .ag .h{font-family:var(--serif);font-size:22px;font-weight:600;color:var(--cor-esc);line-height:1}
+  .ag .h small{display:block;font-family:var(--sans);font-size:12px;color:var(--suave);font-weight:400;margin-top:4px}
+  .ag.cancelado{opacity:.5}.ag.cancelado .nm{text-decoration:line-through}
+  .ag .nm{font-weight:700}
+  .ag .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .livre{color:var(--suave);font-size:13px;padding:6px 0 6px 84px;border-top:1px dashed var(--linha)}
+  .aviso{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--linha);align-items:flex-start}
+  .aviso:first-child{border-top:0}
+  .aviso .ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;font-weight:700}
+  .aviso .ic.novo{background:var(--ok-claro);color:var(--ok)}
+  .aviso .ic.cancelado{background:var(--alerta-claro);color:var(--alerta)}
+  .aviso.nlido{background:linear-gradient(90deg,var(--cor-clara),transparent 70%);margin:0 -20px;padding:12px 20px}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--suave);padding:8px 6px;border-bottom:1.5px solid var(--linha)}
+  td{padding:6px;border-bottom:1px solid var(--linha);vertical-align:middle}
+  td input,td select{width:100%;padding:8px 9px;border:1.5px solid transparent;border-radius:8px;background:transparent}
+  td input:hover{border-color:var(--linha)} td input:focus{border-color:var(--cor);background:#fff;outline:none}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .tab-wrap{overflow-x:auto}
+  .sw{position:relative;width:42px;height:24px;display:inline-block}
+  .sw input{opacity:0;width:0;height:0}
+  .sw span{position:absolute;inset:0;background:#d8cdd1;border-radius:999px;cursor:pointer;transition:.15s}
+  .sw span::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s}
+  .sw input:checked+span{background:var(--ok)} .sw input:checked+span::after{left:21px}
+  .hor-linha{display:grid;grid-template-columns:110px 60px repeat(4,1fr);gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--linha)}
+  .hor-linha input{padding:7px;border:1.5px solid var(--linha);border-radius:8px;width:100%}
+  .topo-prev .logo{--t:56px;width:var(--t);height:var(--t);border-radius:50%;background:var(--ouro);display:grid;place-items:center;font-family:var(--serif);font-size:calc(var(--t)*.45);color:var(--cor-esc);overflow:hidden}
+  .estudio{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:24px;align-items:start}
+  .estudio-prev{background:repeating-conic-gradient(#efe7df 0 25%,#f7f1ea 0 50%) 0 0/22px 22px;border-radius:14px;padding:20px;display:grid;place-items:center;border:1px solid var(--linha)}
+  .estudio-prev canvas{max-width:100%;max-height:640px;width:auto;height:auto;border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+  @media(max-width:800px){.estudio{grid-template-columns:1fr}}
+  .nav-dia{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .nav-dia .titulo-dia{flex:1;min-width:0}
+  .nav-dia h2{font-size:22px}
+  .sub-dia{display:flex;gap:12px;align-items:center;margin-top:3px}
+  .sub-dia input{border:1px solid var(--linha);border-radius:8px;padding:3px 8px;background:#fff;font-size:13px;color:var(--suave)}
+  .btn.redondo{width:38px;height:38px;padding:0;font-size:20px;flex:none}
+  .ag .acts .btn{white-space:nowrap}
+  .td-l{display:none}
+  .hl-grp{display:contents}
+  .hl-grp small{display:none}
+  .acoes-topo{display:flex;gap:8px}
+  .acoes-topo .ic svg{width:17px;height:17px}
+  .aba .ic{margin-right:6px}
+  .aba .badge{position:absolute;top:-6px;right:-12px}
+  @media(max-width:720px){
+    .topo{padding:calc(12px + env(safe-area-inset-top)) 0 14px!important;border-radius:0 0 20px 20px!important;position:sticky;top:0;z-index:30}
+    .topo .marca{flex-direction:row!important;text-align:left!important;gap:12px!important}
+    .topo .logo{width:42px!important;height:42px!important;font-size:19px!important}
+    .topo .logo.original{width:auto!important;max-width:110px}
+    .topo h1{font-size:19px!important}
+    #sub{display:none}
+    .acoes-topo{top:calc(14px + env(safe-area-inset-top))!important;right:14px!important}
+    .acoes-topo .btn{width:40px;height:40px;padding:0}
+    .aba .ic{margin-right:0}
+    .aba .badge{top:0;right:6px;min-width:17px;height:17px;font-size:10px}
+    #login{margin-top:24px!important}
+    .kpis{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+    .kpi{padding:12px}
+    .kpi .rot{font-size:11.5px}
+    .kpi .val{font-size:21px}
+    .kpi .sub{font-size:11.5px}
+    .nav-dia{gap:8px}
+    .sub-dia{flex-wrap:nowrap;white-space:nowrap}
+    .sub-dia input{display:none}
+    #listaDia{padding-bottom:64px}
+    #formCfg .linha2{grid-template-columns:1fr}
+    .modal .linha2{grid-template-columns:1fr 1fr}
+    .nav-dia h2{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #novoAg{position:fixed;right:16px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:35;width:56px;height:56px;border-radius:18px;padding:0;font-size:28px;font-weight:400;box-shadow:0 8px 24px rgba(90,31,56,.35)}
+    #novoAg .txt{display:none}
+    .semana{gap:4px;margin:0 -4px 12px}
+    .sdia{padding:7px 0;border-radius:10px}
+    .sdia .s{font-size:10px;letter-spacing:.3px}
+    .sdia .n{font-size:17px}
+    .sdia .q{font-size:9.5px}
+    .ag{grid-template-columns:52px 1fr;gap:4px 12px;padding:14px 0}
+    .ag .h{font-size:19px}
+    .ag .acts{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;margin-top:8px}
+    .ag .acts .btn{padding:8px 0;font-size:12.5px}
+    .ag .dica{font-size:13px}
+    .livre{padding-left:64px}
+    .aviso.nlido{margin:0 -16px;padding:12px 16px}
+    .barra-dia{gap:10px}
+    .barra-dia h2{font-size:18px;min-width:0;flex-basis:100%}
+    /* serviços: cada linha vira um cartão */
+    .tab-wrap{overflow:visible}
+    table,tbody{display:block}
+    thead{display:none}
+    #tabServ tr{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 10px;padding:12px;border:1px solid var(--linha);border-radius:14px;margin-bottom:10px;background:#fff;align-items:end}
+    #tabServ td{border:0;padding:0;text-align:left}
+    #tabServ td:first-child{grid-column:1/-1}
+    #tabServ td:first-child input{font-weight:700;font-size:17px!important;padding-left:0}
+    #tabServ td:nth-child(2){grid-column:1/-1}
+    #tabServ td input{border:1.5px solid var(--linha);background:#fff;text-align:left}
+    #tabServ td.num{text-align:left}
+    .td-l{display:block;font-size:11px;font-weight:700;color:var(--suave);text-transform:uppercase;letter-spacing:.6px;margin:0 0 3px}
+    #tabServ td:nth-child(5){display:flex;flex-direction:column}
+    #tabServ td:nth-child(6),#tabServ td:nth-child(7){align-self:center}
+    #tabServ td:nth-child(5) .num{font-size:15px;font-weight:600}
+    /* configurações */
+    .hor-linha{grid-template-columns:1fr auto!important;padding:12px 0}
+    .hor-linha.dica{display:none}
+    .hl-grp{display:grid;grid-column:1/-1;grid-template-columns:1fr 1fr;gap:8px}
+    .hl-grp label{display:block}
+    .hl-grp small{display:block;font-size:11px;color:var(--suave);font-weight:600;margin-bottom:3px}
+    .hor-linha.fechado .hl-grp{display:none}
+    /* divulgar */
+    .estudio{gap:14px}
+    .estudio-prev{order:-1;padding:14px}
+    .estudio-prev canvas{max-height:440px}
+    .linkbox{padding:10px}
+    .linkbox code{font-size:12.5px;min-width:0}
+    .rank{font-size:14px}
+  }
+  .rank{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--linha);font-size:14.5px}
+  .rank .bar{grid-column:1/-1;height:6px;background:var(--fundo);border-radius:3px;overflow:hidden;margin-top:-4px}
+  .rank .bar i{display:block;height:100%;background:var(--ouro)}
+  .linkbox{display:flex;gap:8px;align-items:center;padding:12px;background:var(--fundo);border-radius:12px;margin-bottom:10px;flex-wrap:wrap}
+  .linkbox code{flex:1;font-size:14px;word-break:break-all;min-width:200px}
+  #login{max-width:360px;margin:-40px auto 0;position:relative;z-index:1}
+  @media(max-width:640px){.ag{grid-template-columns:56px 1fr}.ag .acts{grid-column:1/-1;justify-content:flex-start}.livre{padding-left:0}.hor-linha{grid-template-columns:1fr 50px;}.hor-linha .hl{grid-column:span 1}}
+</style>
+</head>
+<body>
+<header class="topo">
+  <div class="wrap">
+    <div class="marca"><div class="logo" id="logo">✂</div><div><h1 id="nome">Painel do salão</h1><p id="sub">Agenda, avisos, serviços e financeiro</p></div></div>
+    <div class="acoes-topo">
+      <button class="btn claro peq oculto" id="btnNotif"><span class="ic"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></span><span class="so-desktop">Ativar alertas</span></button>
+      <button class="btn claro peq so-mobile oculto" id="btnCfg" aria-label="Configurações"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span></button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <form id="login" class="cartao oculto">
+    <h2 style="margin-bottom:6px">Entrar no painel</h2>
+    <p class="dica" style="margin-bottom:14px">Digite o PIN do salão (inicial: 1234 — troque em Configurações).</p>
+    <label class="campo"><span>PIN</span><input name="pin" type="password" inputmode="numeric" autofocus required></label>
+    <button class="btn bloco">Entrar</button>
+  </form>
+
+  <div id="app" class="oculto">
+    <nav class="abas">
+      <button class="aba on" data-aba="agenda"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M8 2.5v4M16 2.5v4M3 10h18"/><path d="M7.5 14h3M13.5 14h3M7.5 17h3"/></svg></span><span>Agenda</span></button>
+      <button class="aba" data-aba="avisos"><span class="ic"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span class="badge oculto" id="badge">0</span></span><span>Avisos</span></button>
+      <button class="aba" data-aba="servicos"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="6" cy="6.5" r="2.5"/><circle cx="6" cy="17.5" r="2.5"/><path d="M8 8l12 9M8 16l12-9"/></svg></span><span class="so-desktop">Serviços e preços</span><span class="so-mobile">Serviços</span></button>
+      <button class="aba" data-aba="financeiro"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span>Financeiro</span></button>
+      <button class="aba" data-aba="divulgar"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></span><span>Divulgar</span></button>
+      <button class="aba so-desktop" data-aba="config"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span>Configurações</span></button>
+    </nav>
+
+    <section data-sec="agenda">
+      <div class="kpis" id="kpisHoje"></div>
+      <div class="cartao">
+        <div class="nav-dia">
+          <button class="btn sec peq redondo" id="ant" aria-label="Dia anterior">‹</button>
+          <div class="titulo-dia">
+            <h2 id="tituloDia"></h2>
+            <div class="sub-dia"><button class="link-btn" id="hoje">Voltar para hoje</button><input type="date" id="pickDia"></div>
+          </div>
+          <button class="btn sec peq redondo" id="prox" aria-label="Próximo dia">›</button>
+          <button class="btn peq" id="novoAg"><span>+</span><span class="txt">Agendar</span></button>
+        </div>
+        <div class="semana" id="semana"></div>
+        <div id="listaDia"></div>
+      </div>
+    </section>
+
+    <section data-sec="avisos" class="oculto">
+      <div class="cartao">
+        <div class="barra-dia"><h2>Avisos de agendamentos e cancelamentos</h2><button class="btn sec peq" id="lerTodos">Marcar todos como lidos</button></div>
+        <p class="dica" style="margin-bottom:12px">Chegam em tempo real enquanto o painel está aberto (com som e notificação, se ativada).</p>
+        <div id="listaAvisos"></div>
+      </div>
+    </section>
+
+    <section data-sec="servicos" class="oculto">
+      <div class="cartao">
+        <div class="barra-dia"><h2>Tabela de serviços e preços</h2><button class="btn peq" id="addServ">+ Novo serviço</button></div>
+        <p class="dica" style="margin-bottom:12px">Edite direto na tabela — salva sozinho. A duração define quanto tempo o horário fica bloqueado na agenda. Serviços inativos não aparecem para os clientes.</p>
+        <div class="tab-wrap"><table>
+          <thead><tr><th>Serviço</th><th>Categoria</th><th class="num" style="width:110px">Duração (min)</th><th class="num" style="width:120px">Preço (R$)</th><th class="num" style="width:90px">Vendidos</th><th style="width:70px">Ativo</th><th style="width:40px"></th></tr></thead>
+          <tbody id="tabServ"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <section data-sec="financeiro" class="oculto">
+      <div class="cartao">
+        <div class="barra-dia"><h2 style="flex:1">Financeiro</h2>
+          <select id="periodo" class="btn sec peq"><option value="mes">Este mês</option><option value="mesant">Mês passado</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="tudo">Tudo</option></select>
+        </div>
+        <div class="kpis" id="kpisFin"></div>
+        <h3 style="margin:8px 0 4px">Faturamento por serviço</h3>
+        <p class="dica" style="margin-bottom:6px">Considera atendimentos marcados como concluídos.</p>
+        <div id="rank"></div>
+      </div>
+    </section>
+
+    <section data-sec="divulgar" class="oculto">
+      <div class="cartao">
+        <h2 style="margin-bottom:6px">Imagem de horários vagos</h2>
+        <p class="dica" style="margin-bottom:16px">Arte pronta para postar no Instagram e no status do WhatsApp, com a sua logo e a agenda atualizada. Ela muda na hora quando alguém agenda ou cancela.</p>
+        <div class="estudio">
+          <div class="estudio-ctrl">
+            <label class="campo"><span>Formato</span><select id="iFormato"><option value="story">Story / Status (1080×1920)</option><option value="feed">Feed retrato (1080×1350)</option><option value="quadrado">Feed quadrado (1080×1080)</option></select></label>
+            <label class="campo"><span>Tema</span><select id="iTema"><option value="vinho">Vinho e dourado</option><option value="preto">Preto e dourado</option><option value="marinho">Azul-marinho e prata</option><option value="claro">Claro e elegante</option></select></label>
+            <div class="linha2">
+              <label class="campo"><span>Período</span><select id="iDias"><option value="1">Só hoje</option><option value="2">Hoje e amanhã</option><option value="3">3 dias</option><option value="5" selected>5 dias</option><option value="7">7 dias</option></select></label>
+              <label class="campo"><span>Mostrar</span><select id="iModo"><option value="faixas">Faixas (09:00 – 11:30)</option><option value="cada">Cada horário</option></select></label>
+            </div>
+            <label class="campo"><span>Serviço</span><select id="iServico"><option value="">Todos os serviços</option></select></label>
+            <label class="campo"><span>Título</span><input id="iTitulo" value="Horários disponíveis" maxlength="40"></label>
+            <label class="campo"><span>Link que aparece na imagem</span><input id="iLink" placeholder="seusalao.com.br"></label>
+            <div style="display:grid;gap:8px;margin-top:6px">
+              <button class="btn" id="iBaixar">⬇ Baixar imagem</button>
+              <div style="display:flex;gap:8px"><button class="btn sec" id="iCopiar" style="flex:1">Copiar imagem</button><button class="btn sec" id="iShare" style="flex:1">Compartilhar</button></div>
+            </div>
+          </div>
+          <div class="estudio-prev"><canvas id="iCanvas" width="1080" height="1920"></canvas></div>
+        </div>
+      </div>
+
+      <div class="cartao">
+        <h2 style="margin-bottom:6px">Links para divulgar</h2>
+        <p class="dica" style="margin-bottom:14px">Coloque na bio do Instagram, no status do WhatsApp ou mande direto para os clientes.</p>
+        <div id="links"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn sec" href="./" target="_blank">Ver como o cliente vê ↗</a></div>
+      </div>
+    </section>
+
+    <section data-sec="config" class="oculto">
+      <form class="cartao" id="formCfg">
+        <h2 style="margin-bottom:14px">Dados do salão</h2>
+        <div class="linha2">
+          <label class="campo"><span>Nome do salão</span><input name="nomeSalao"></label>
+          <label class="campo"><span>Frase de apresentação</span><input name="slogan"></label>
+          <label class="campo"><span>WhatsApp do salão (com DDD)</span><input name="whatsapp" inputmode="tel" placeholder="11999998888"></label>
+          <label class="campo"><span>Endereço</span><input name="endereco"></label>
+          <label class="campo"><span>E-mail para receber os avisos</span><input name="emailAvisos" type="email" placeholder="vazio = e-mail dono da planilha"></label>
+        </div>
+        <h2 style="margin:10px 0 14px">Logo</h2>
+        <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+          <div style="background:var(--cor-esc);border-radius:14px;padding:18px 22px;min-width:120px;display:grid;place-items:center" class="topo-prev">
+            <div class="logo" id="logoPrev"></div>
+          </div>
+          <div style="flex:1;min-width:240px">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+              <label class="btn sec peq" style="cursor:pointer">Escolher imagem…<input type="file" id="logoArq" accept="image/*" hidden></label>
+              <button type="button" class="btn sec peq" id="logoRemover">Remover logo</button>
+            </div>
+            <label class="campo"><span>Tamanho: <b id="logoTamTxt"></b></span><input type="range" name="logoTamanho" min="32" max="160" step="2" style="padding:0;border:0"></label>
+            <label class="campo" style="margin:0"><span>Formato</span><select name="logoFormato"><option value="redondo">Redondo</option><option value="quadrado">Quadrado (cantos arredondados)</option><option value="original">Original (sem recorte)</option></select></label>
+          </div>
+        </div>
+        <h2 style="margin:10px 0 14px">Regras da agenda</h2>
+        <div class="linha2">
+          <label class="campo"><span>Horários a cada (min)</span><select name="intervaloMin"><option>15</option><option>20</option><option>30</option><option>45</option><option>60</option></select></label>
+          <label class="campo"><span>Cliente agenda até quantos dias à frente</span><input name="diasAntecedencia" type="number" min="1" max="120"></label>
+          <label class="campo"><span>Antecedência mínima para agendar (horas)</span><input name="antecedenciaMinHoras" type="number" min="0"></label>
+          <label class="campo"><span>Cliente cancela pelo link até (horas antes)</span><input name="cancelamentoMinHoras" type="number" min="0"></label>
+        </div>
+        <h2 style="margin:10px 0 8px">Horário de funcionamento</h2>
+        <div class="hor-linha dica" style="font-weight:600"><span>Dia</span><span>Aberto</span><span class="hl">Abre</span><span class="hl">Fecha</span><span class="hl">Pausa início</span><span class="hl">Pausa fim</span></div>
+        <div id="horarios"></div>
+        <h2 style="margin:18px 0 8px">Dias fechados (feriados, folgas)</h2>
+        <div style="display:flex;gap:8px;margin-bottom:10px"><input type="date" id="novoFechado" class="btn sec peq" style="padding:6px 10px"><button type="button" class="btn sec peq" id="addFechado">Adicionar</button></div>
+        <div id="fechados" class="chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px"></div>
+        <label class="campo" style="max-width:220px"><span>PIN do painel</span><input name="pin" inputmode="numeric"></label>
+        <button class="btn">Salvar configurações</button>
+      </form>
+    </section>
+  </div>
+</main>
+<div id="toast"></div>
+<script src="config.js"></script>
+<script src="comum.js"></script>
+<script src="admin.js"></script>
+<script src="divulgar.js"></script>
+</body>
+</html>

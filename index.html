@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Agendar horário</title>
+<meta name="theme-color" content="#5a1f38">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icone-192.png">
+<link rel="apple-touch-icon" href="icone-192.png">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<header class="topo">
+  <div class="wrap">
+    <div class="marca">
+      <div class="logo" id="logo">✂</div>
+      <div><h1 id="nome">Carregando…</h1><p id="slogan"></p></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="abas-cli" id="abas">
+    <button data-aba="agendar" class="on"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M8 2.5v4M16 2.5v4M3 10h18M12 13v5M9.5 15.5h5"/></svg></span><span>Agendar</span></button>
+    <button data-aba="vagas"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span>Vagas</span></button>
+    <button data-aba="funcionamento"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg></span><span>Horários</span></button>
+    <button data-aba="precos"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8.5" r="1.5"/></svg></span><span>Preços</span></button>
+  </nav>
+
+  <!-- ============ AGENDAR ============ -->
+  <div data-sec="agendar">
+    <section id="fluxo">
+      <div class="cartao" id="passo1">
+        <div class="titulo-sec"><span class="n">1</span><h2>Escolha o serviço</h2></div>
+        <div class="serv-resumo"><span class="nome" id="srNome"></span><span class="preco" id="srPreco"></span><button class="btn sec peq" id="srTrocar">Trocar</button></div>
+        <div id="servicos"></div>
+      </div>
+
+      <div class="cartao" id="passo2">
+        <div class="titulo-sec"><span class="n">2</span><h2>Dia e horário</h2></div>
+        <p class="dica" id="dica2">Escolha um serviço primeiro.</p>
+        <div id="blocoData" class="oculto">
+          <div class="datas" id="datas"></div>
+          <div id="horas" class="horas" style="margin-top:6px"></div>
+        </div>
+      </div>
+
+      <div class="cartao oculto" id="passo3">
+        <div class="titulo-sec"><span class="n">3</span><h2>Seus dados</h2></div>
+        <div class="resumo" id="resumo"></div>
+        <form id="form">
+          <label class="campo"><span>Nome</span><input name="cliente" required autocomplete="name" placeholder="Como podemos te chamar?"></label>
+          <label class="campo"><span>WhatsApp (com DDD)</span><input name="telefone" required inputmode="tel" autocomplete="tel" placeholder="(11) 99999-8888"></label>
+          <label class="campo"><span>Observação (opcional)</span><textarea name="obs" rows="2" placeholder="Ex.: cabelo comprido, alergia a algum produto…"></textarea></label>
+          <button class="btn bloco" id="btnConfirmar">Confirmar agendamento</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="ok" class="oculto">
+      <div class="cartao sucesso">
+        <div class="check">✓</div>
+        <h2>Agendamento confirmado!</h2>
+        <div class="resumo" id="resumoOk" style="text-align:left;margin-top:14px"></div>
+        <p class="dica">Guarde seu código — ele serve para cancelar se precisar:</p>
+        <div class="codigo" id="codigoOk"></div>
+        <div style="display:grid;gap:8px;margin-top:14px">
+          <a class="btn zap oculto" id="zapOk" target="_blank" rel="noopener">Enviar confirmação ao salão no WhatsApp</a>
+          <button class="btn sec" onclick="location.href='./'">Fazer outro agendamento</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="cartao" id="meus">
+      <div class="titulo-sec"><h2>Meus agendamentos</h2></div>
+      <div id="listaMeus"></div>
+      <details id="buscar" style="margin-top:8px">
+        <summary class="link-btn" style="list-style:none">Já agendou em outro aparelho? Consulte pelo código</summary>
+        <form id="formBusca" style="margin-top:12px">
+          <div class="linha2">
+            <label class="campo"><span>WhatsApp</span><input name="telefone" required inputmode="tel" placeholder="(11) 99999-8888"></label>
+            <label class="campo"><span>Código</span><input name="codigo" required maxlength="6" style="text-transform:uppercase" placeholder="ABC123"></label>
+          </div>
+          <button class="btn sec peq">Buscar</button>
+        </form>
+      </details>
+    </section>
+  </div>
+
+  <!-- ============ HORÁRIOS VAGOS ============ -->
+  <div data-sec="vagas" class="oculto">
+    <div class="cartao">
+      <div class="linha2 filtros-vagas" style="margin-bottom:2px">
+        <label class="campo"><span>Serviço</span><select id="vServico"><option value="">Todos os serviços</option></select></label>
+        <label class="campo"><span>Período</span><select id="vDias"><option value="3">3 dias</option><option value="7" selected>7 dias</option><option value="14">14 dias</option></select></label>
+      </div>
+      <p class="dica">Toque em um horário para agendar.</p>
+    </div>
+    <div class="cartao" id="vLista"><div class="vazio">Carregando…</div></div>
+  </div>
+
+  <!-- ============ FUNCIONAMENTO ============ -->
+  <div data-sec="funcionamento" class="oculto">
+    <div class="cartao">
+      <div class="titulo-sec"><h2>Horário de funcionamento</h2></div>
+      <div id="fLista"></div>
+    </div>
+    <div class="cartao oculto" id="fFechados">
+      <div class="titulo-sec"><h2>Dias sem atendimento</h2></div>
+      <div id="fFechadosLista" class="chips"></div>
+    </div>
+    <div class="cartao" id="fContato">
+      <div class="titulo-sec"><h2>Onde estamos</h2></div>
+      <div id="fContatoInfo"></div>
+    </div>
+  </div>
+
+  <!-- ============ PREÇOS ============ -->
+  <div data-sec="precos" class="oculto">
+    <div class="cartao">
+      <div class="titulo-sec"><h2>Serviços e preços</h2></div>
+      <div id="pLista"></div>
+    </div>
+  </div>
+
+  <p class="rodape" id="rodape"></p>
+</main>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script src="comum.js"></script>
+<script src="cliente.js"></script>
+</body>
+</html>
