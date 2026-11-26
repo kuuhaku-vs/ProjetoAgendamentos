@@ -53,7 +53,8 @@ const HORARIOS_PADRAO = [
   [6, DIAS[6], true, '08:00', '17:00', '', '']
 ];
 
-function ss_() { return SpreadsheetApp.getActiveSpreadsheet(); }
+const PLANILHA_ID = '18ChN7omFeBy48t2Pl86uJ1MdsYJ9dEbG0V0gY0oZDhw'; // planilha "Projeto - Agendamentos"
+function ss_() { return SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openById(PLANILHA_ID); }
 
 /** Cria/ajusta as abas. Pode rodar quantas vezes quiser (não apaga nada). */
 function configurar() {
